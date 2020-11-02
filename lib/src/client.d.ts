@@ -30,7 +30,10 @@ export default class Client implements EthereumClient {
     private _address;
     private _etherscan;
     private _vault;
-    constructor(network?: Network, phrase?: Phrase, vault?: string);
+    constructor(network?: Network, providersOpts?: Record<'infura' | 'etherscan', {
+        weight: number;
+        apiKey?: any;
+    }>, phrase?: Phrase, vault?: string);
     /**
      * Getters
      */
@@ -47,11 +50,11 @@ export default class Client implements EthereumClient {
     /**
      * changes the provider
      */
-    EtherscanProvider(): Provider;
+    EtherscanProvider(apiKey?: any): Provider;
     /**
      * changes the provider to Infura
      */
-    InfuraProvider(apiKey: any): Provider;
+    InfuraProvider(apiKey?: any): Provider;
     /**
      * Set's the current network
      */

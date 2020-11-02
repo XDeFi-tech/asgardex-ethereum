@@ -1,7 +1,7 @@
 import { generateMnemonic, validateMnemonic } from 'bip39'
 import { ethers } from 'ethers'
 import { Provider, TransactionResponse } from '@ethersproject/abstract-provider'
-import { EtherscanProvider, getDefaultProvider, InfuraProvider } from '@ethersproject/providers'
+import { EtherscanProvider, getDefaultProvider, InfuraProvider, FallbackProvider } from '@ethersproject/providers'
 
 import vaultABI from '../data/vault.json'
 import erc20ABI from '../data/erc20.json'
@@ -41,20 +41,35 @@ export default class Client implements EthereumClient {
   private _etherscan: EtherscanProvider
   private _vault: ethers.Contract | null = null
 
-  constructor(network: Network = Network.TEST, phrase?: Phrase, vault?: string) {
+  constructor(
+    network: Network = Network.TEST,
+    providersOpts?: Record<'infura' | 'etherscan', { weight: number; apiKey?: any }>,
+    phrase?: Phrase,
+    vault?: string,
+  ) {
     if (phrase && !validateMnemonic(phrase)) {
       throw new Error('Invalid Phrase')
     } else {
       this._phrase = phrase || generateMnemonic()
       this._network = network
-      this._provider = getDefaultProvider(network)
+      this._provider = providersOpts
+        ? new FallbackProvider([
+            {
+              provider: new InfuraProvider(network, providersOpts.infura.apiKey),
+              weight: providersOpts.infura.weight,
+            },
+            {
+              provider: new EtherscanProvider(network, providersOpts.etherscan.apiKey),
+              weight: providersOpts.etherscan.weight,
+            },
+          ])
+        : getDefaultProvider(network)
       this._wallet = ethers.Wallet.fromMnemonic(this._phrase)
       this._address = this._wallet.address
       this._etherscan = new EtherscanProvider(this._network) // for tx history
       if (vault) this.setVault(vault)
       // Connects to the ethereum network with it
-      const provider = getDefaultProvider(this._network)
-      const newWallet = this.wallet.connect(provider)
+      const newWallet = this.wallet.connect(this._provider)
       this.changeWallet(newWallet)
     }
   }
@@ -97,8 +112,8 @@ export default class Client implements EthereumClient {
   /**
    * changes the provider
    */
-  EtherscanProvider(): Provider {
-    const newWallet = this.wallet.connect(new EtherscanProvider(this._network))
+  EtherscanProvider(apiKey?: any): Provider {
+    const newWallet = this.wallet.connect(new EtherscanProvider(this._network, apiKey))
     this.changeWallet(newWallet)
     return (this._provider = this._wallet.provider)
   }
@@ -106,7 +121,7 @@ export default class Client implements EthereumClient {
   /**
    * changes the provider to Infura
    */
-  InfuraProvider(apiKey: any): Provider {
+  InfuraProvider(apiKey?: any): Provider {
     const newWallet = this.wallet.connect(new InfuraProvider(this._network, apiKey))
     this.changeWallet(newWallet)
     return (this._provider = this._wallet.provider)
