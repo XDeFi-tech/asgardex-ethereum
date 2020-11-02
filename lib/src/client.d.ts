@@ -49,6 +49,10 @@ export default class Client implements EthereumClient {
      */
     EtherscanProvider(): Provider;
     /**
+     * changes the provider to Infura
+     */
+    InfuraProvider(apiKey: any): Provider;
+    /**
      * Set's the current network
      */
     setNetwork(network: Network): Network;

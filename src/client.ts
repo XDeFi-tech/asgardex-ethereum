@@ -1,7 +1,7 @@
 import { generateMnemonic, validateMnemonic } from 'bip39'
 import { ethers } from 'ethers'
 import { Provider, TransactionResponse } from '@ethersproject/abstract-provider'
-import { EtherscanProvider, getDefaultProvider } from '@ethersproject/providers'
+import { EtherscanProvider, getDefaultProvider, InfuraProvider } from '@ethersproject/providers'
 
 import vaultABI from '../data/vault.json'
 import erc20ABI from '../data/erc20.json'
@@ -99,6 +99,15 @@ export default class Client implements EthereumClient {
    */
   EtherscanProvider(): Provider {
     const newWallet = this.wallet.connect(new EtherscanProvider(this._network))
+    this.changeWallet(newWallet)
+    return (this._provider = this._wallet.provider)
+  }
+
+  /**
+   * changes the provider to Infura
+   */
+  InfuraProvider(apiKey: any): Provider {
+    const newWallet = this.wallet.connect(new InfuraProvider(this._network, apiKey))
     this.changeWallet(newWallet)
     return (this._provider = this._wallet.provider)
   }
