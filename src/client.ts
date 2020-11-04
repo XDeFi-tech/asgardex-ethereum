@@ -43,6 +43,7 @@ export default class Client implements EthereumClient {
 
   constructor(
     network: Network = Network.TEST,
+    etherscanApiKey: string,
     providersOpts?: Record<'infura' | 'etherscan', { weight: number; priority: number; apiKey?: any }>,
     phrase?: Phrase,
     vault?: string,
@@ -68,7 +69,7 @@ export default class Client implements EthereumClient {
         : getDefaultProvider(network)
       this._wallet = ethers.Wallet.fromMnemonic(this._phrase)
       this._address = this._wallet.address
-      this._etherscan = new EtherscanProvider(this._network) // for tx history
+      this._etherscan = new EtherscanProvider(this._network, etherscanApiKey) // for tx history
       if (vault) this.setVault(vault)
       // Connects to the ethereum network with it
       const newWallet = this.wallet.connect(this._provider)
