@@ -43,7 +43,7 @@ export default class Client implements EthereumClient {
 
   constructor(
     network: Network = Network.TEST,
-    providersOpts?: Record<'infura' | 'etherscan', { weight: number; apiKey?: any }>,
+    providersOpts?: Record<'infura' | 'etherscan', { weight: number; priority: number; apiKey?: any }>,
     phrase?: Phrase,
     vault?: string,
   ) {
@@ -57,10 +57,12 @@ export default class Client implements EthereumClient {
             {
               provider: new InfuraProvider(network, providersOpts.infura.apiKey),
               weight: providersOpts.infura.weight,
+              priority: providersOpts.infura.priority,
             },
             {
               provider: new EtherscanProvider(network, providersOpts.etherscan.apiKey),
               weight: providersOpts.etherscan.weight,
+              priority: providersOpts.etherscan.priority,
             },
           ])
         : getDefaultProvider(network)

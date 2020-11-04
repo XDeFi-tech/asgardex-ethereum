@@ -32,6 +32,7 @@ export default class Client implements EthereumClient {
     private _vault;
     constructor(network?: Network, providersOpts?: Record<'infura' | 'etherscan', {
         weight: number;
+        priority: number;
         apiKey?: any;
     }>, phrase?: Phrase, vault?: string);
     /**
